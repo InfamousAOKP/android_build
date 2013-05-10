@@ -320,6 +320,7 @@ def AppendAssertions(script, info_dict):
     device = GetBuildProp("ro.product.device", info_dict)
   else:
     device = OPTIONS.override_device
+  script.Print("Checking device ID...")
   script.AssertDevice(device)
 
 
@@ -427,6 +428,10 @@ def WriteFullOTAPackage(input_zip, output_zip):
     script.FormatPartition("/data")
 
   script.Print("******************************************");
+  script.Print("****     Welcome to Infamous AOKP    *****");
+  script.Print("******************************************");
+  script.Print(" ");
+  script.Print("******************************************");
   script.Print("*    ______  _____   __  __   _____      *");
   script.Print("*   /\\  _  \\/\\  __`\\/\\ \\/\\ \\ /\\  _ `\\    *");
   script.Print("*   \\ \\ \\L\\ \\ \\ \\/\\ \\ \\ \\/'/'\\ \\ \\L\\ \\   *");
@@ -447,7 +452,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
   else:
     build = GetBuildProp("ro.build.date", OPTIONS.info_dict)
     script.Print("******************************************");
-    script.Print("************ UNOFFICIAL BUILD ************");
+    script.Print("********** Infamous AOKP build ***********");
     script.Print("******************************************");
     script.Print("*   Compiled: %s"%(build));
 
@@ -460,12 +465,15 @@ def WriteFullOTAPackage(input_zip, output_zip):
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
   if OPTIONS.persist:
+    script.Print("Saving system settings")
     script.Mount("/system")
     script.RunPersist("save")
     script.Unmount("/system")
 
+  script.Print("Formatting system partition")
   script.FormatPartition("/system")
   script.Mount("/system")
+  script.Print("Installing Infamous AOKP ROM")
   script.UnpackPackageDir("system", "/system")
 
   symlinks = CopySystemFiles(input_zip, output_zip)
@@ -475,9 +483,11 @@ def WriteFullOTAPackage(input_zip, output_zip):
                                      OPTIONS.input_tmp, "BOOT")
 
   Item.GetMetadata(input_zip)
+  script.Print("Fixing permissions...")
   Item.Get("system").SetPermissions(script)
 
   if OPTIONS.persist:
+    script.Print("Restoring system settings")
     script.RunPersist("restore")
 
   common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
